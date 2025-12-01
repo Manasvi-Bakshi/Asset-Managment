@@ -1,0 +1,58 @@
+{
+    "metadata": {
+        "company": "Example",
+        "environment": "testing"
+    },
+    "assets": [
+        {
+            "id": "ASSET-0001",
+            "type": "laptop",
+            "make": "Dell",
+            "model": "Latitude 7420",
+            "serial": "DL7420-ABC123",
+            "purchase_date": "2023-02-15",
+            "warranty_expiry": "2025-02-15",
+            "assigned_to": "",
+            "status": "available",
+            "notes": "Standard corporate laptop for testing"
+        },
+        {
+            "id": "ASSET-0002",
+            "type": "desktop",
+            "make": "HP",
+            "model": "ProDesk 600",
+            "serial": "HP600-XYZ789",
+            "purchase_date": "2021-08-01",
+            "warranty_expiry": "2024-08-01",
+            "assigned_to": " ",
+            "status": "in_service",
+            "notes": "Assigned to IT support"
+        },
+        {
+            "id": "ASSET-0003",
+            "type": "smartphone",
+            "make": "Apple",
+            "model": "iPhone 13",
+            "serial": "IP13-555-TEST",
+            "purchase_date": "2022-11-10",
+            "warranty_expiry": "2023-11-10",
+            "location": "HQ - Mobile Pool",
+            "assigned_to": "s.team",
+            "status": "deployed",
+            "notes": "Mobile device for field team"
+        },
+        {
+            "id": "ASSET-0004",
+            "type": "printer",
+            "make": "Brother",
+            "model": "MFC-L8900",
+            "serial": "BR-L8900-001",
+            "asset_tag": "PR-3001",
+            "purchase_date": "2020-05-20",
+            "warranty_expiry": "2022-05-20",
+            "assigned_to": null,
+            "status": "maintenance",
+            "notes": "Under repair, use backup printer PR-3002"
+        }
+    ]
+}

@@ -1,0 +1,26 @@
+[
+    {
+        "EUid": 1,
+        "firstName": "Alice",
+        "lastName": "Smith",
+        "email": "alice.smith@example.com",
+        "position": "Developer",
+        "active": true
+    },
+    {
+        "EUid": 2,
+        "firstName": "Bob",
+        "lastName": "Jones",
+        "email": "bob.jones@example.com",
+        "position": "Designer",
+        "active": true
+    },
+    {
+        "EUid": 3,
+        "firstName": "Carol",
+        "lastName": "Taylor",
+        "email": "carol.taylor@example.com",
+        "position": "QA",
+        "active": false
+    }
+]
