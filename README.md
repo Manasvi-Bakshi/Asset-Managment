@@ -1,17 +1,23 @@
 # Asset Management App
 
-A prototype for tracking physical assets, built during the STMicroelectronics Internship IRIS event.
+An application for tracking office assets.
 
 ## Status
 **Initial Prototype** – Early version, evolving into an MVP.
 
-## Purpose
-- Basic asset registration & tracking
-- Foundation for future development
-- Demonstrate core concepts
+## Features
+- Role based access Dashboard
+- Asset system location tracking
+- Health management of asset
 
-## Getting Started
-*(Setup instructions will be added during development)*
+## Todo
+- Integrate Microsoft API for login
+- Build ML model for health
+- Figma Design Dashboard
+- Frontend Dashboard
+- Store dummy data into database
+- Show location of asset
+- Get health details about asset and display 
 
 ---
 *Built as part of the STMicroelectronics Internship IRIS event.*
