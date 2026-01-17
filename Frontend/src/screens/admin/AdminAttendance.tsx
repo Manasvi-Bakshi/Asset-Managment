@@ -1,5 +1,5 @@
-import { StatCard } from '../StatCard';
-import { StatusBadge } from '../StatusBadge';
+import { StatCard } from '@/components/common/StatCard';
+import { StatusBadge } from '@/components/common/StatusBadge';
 import { Users, CheckCircle, XCircle, Clock, Search, Download } from 'lucide-react';
 
 const attendanceData = [

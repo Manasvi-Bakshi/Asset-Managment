@@ -1,7 +1,9 @@
-import { useState } from 'react';
-import { LoginPage } from './components/LoginPage';
-import { AdminDashboard } from './components/AdminDashboard';
-import { EmployeeDashboard } from './components/EmployeeDashboard';
+import { useState } from "react";
+
+import { LoginPage } from "@/screens/auth/LoginPage";
+import { AdminDashboard } from "@/screens/admin/AdminDashboard";
+import { EmployeeDashboard } from "@/screens/employee/EmployeeDashboard";
+
 
 export type UserRole = 'admin' | 'employee' | null;
 
