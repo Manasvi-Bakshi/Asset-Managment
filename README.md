@@ -20,4 +20,3 @@ An application for tracking office assets.
 - Get health details about asset and display 
 
 ---
-*Built as part of the STMicroelectronics Internship IRIS event.*
