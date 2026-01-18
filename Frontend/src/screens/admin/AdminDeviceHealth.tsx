@@ -1,5 +1,5 @@
-import { StatCard } from '../StatCard';
-import { StatusBadge } from '../StatusBadge';
+import { StatCard } from '@/components/common/StatCard';
+import { StatusBadge } from '@/components/common/StatusBadge';
 import { Laptop, Activity, AlertTriangle, XCircle, Search, Filter } from 'lucide-react';
 
 const deviceData = [

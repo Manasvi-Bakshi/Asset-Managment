@@ -1,4 +1,4 @@
-import { StatCard } from '../StatCard';
+import { StatCard } from '@/components/common/StatCard';
 import { Users, CheckCircle, XCircle, Clock, Laptop, Activity, AlertTriangle } from 'lucide-react';
 
 export function DashboardOverview() {

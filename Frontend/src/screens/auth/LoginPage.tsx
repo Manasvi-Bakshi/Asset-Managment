@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { UserRole } from '../App';
+import { UserRole } from '@/App';
 import stLogo from 'figma:asset/8a2a604d8afe75e33045de09e7f0260bf54a57ec.png';
 
 interface LoginPageProps {

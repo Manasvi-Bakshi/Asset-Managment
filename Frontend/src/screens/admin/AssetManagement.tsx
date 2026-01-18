@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { StatusBadge } from '../StatusBadge';
+import { StatusBadge } from '@/components/common/StatusBadge';
 import { Search, Download, Plus, Edit, Trash2, Filter } from 'lucide-react';
 
 interface Asset {

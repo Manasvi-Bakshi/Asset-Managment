@@ -1,7 +1,7 @@
 import { useState } from 'react';
-import { EmployeeAttendance } from './employee/EmployeeAttendance';
-import { EmployeeDeviceHealth } from './employee/EmployeeDeviceHealth';
-import { AssignedLaptop } from './employee/AssignedLaptop';
+import { EmployeeAttendance } from './EmployeeAttendance';
+import { EmployeeDeviceHealth } from './EmployeeDeviceHealth';
+import { AssignedLaptop } from './AssignedLaptop';
 import { LogOut, Clock, Laptop, Activity } from 'lucide-react';
 import stLogo from 'figma:asset/8a2a604d8afe75e33045de09e7f0260bf54a57ec.png';
 

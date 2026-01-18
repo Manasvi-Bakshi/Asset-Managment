@@ -1,10 +1,10 @@
 import { useState } from 'react';
-import { Sidebar } from './Sidebar';
-import { DashboardOverview } from './admin/DashboardOverview';
-import { AdminAttendance } from './admin/AdminAttendance';
-import { AdminDeviceHealth } from './admin/AdminDeviceHealth';
-import { AssetManagement } from './admin/AssetManagement';
-import { Reports } from './admin/Reports';
+import { Sidebar } from "@/components/layout/Sidebar";
+import { DashboardOverview } from '@/screens/admin/DashboardOverview';
+import { AdminAttendance } from '@/screens/admin/AdminAttendance';
+import { AdminDeviceHealth } from '@/screens/admin/AdminDeviceHealth';
+import { AssetManagement } from '@/screens/admin/AssetManagement';
+import { Reports } from '@/screens/admin/Reports';
 
 interface AdminDashboardProps {
   userName: string;
