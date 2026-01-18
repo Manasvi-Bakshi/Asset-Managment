@@ -1,13 +1,23 @@
-import fs from "fs"
-import path from "path"
-import { fileURLToPath } from "url"
-
-const __filename = fileURLToPath(import.meta.url)
-const __dirname = path.dirname(__filename)
-
-const assetsFilePath = path.join(__dirname, "assets.json")
+import pool from "../shared/db/pg.client.js"
 
 export async function getAllAssets() {
-  const data = await fs.promises.readFile(assetsFilePath, "utf-8")
-  return JSON.parse(data)
+  const query = `
+    SELECT
+      id,
+      asset_code,
+      asset_type,
+      company,
+      model,
+      serial_number,
+      asset_tag,
+      purchase_date,
+      warranty_expiry_date,
+      status,
+      created_at,
+      updated_at
+    FROM assets
+    ORDER BY created_at DESC
+  `
+  const { rows } = await pool.query(query)
+  return rows
 }
