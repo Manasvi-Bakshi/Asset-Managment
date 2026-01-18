@@ -1,26 +1,28 @@
-[
+{
+  "employees": [
     {
-        "EUid": 1,
-        "firstName": "Alice",
-        "lastName": "Smith",
-        "email": "alice.smith@example.com",
-        "position": "Developer",
-        "active": true
+      "id": "EMP-001",
+      "name": "Admin User",
+      "email": "admin@company.com",
+      "role": "admin",
+      "department": "IT",
+      "status": "active"
     },
     {
-        "EUid": 2,
-        "firstName": "Bob",
-        "lastName": "Jones",
-        "email": "bob.jones@example.com",
-        "position": "Designer",
-        "active": true
+      "id": "EMP-002",
+      "name": "Employee One",
+      "email": "employee1@company.com",
+      "role": "employee",
+      "department": "Engineering",
+      "status": "active"
     },
     {
-        "EUid": 3,
-        "firstName": "Carol",
-        "lastName": "Taylor",
-        "email": "carol.taylor@example.com",
-        "position": "QA",
-        "active": false
+      "id": "EMP-003",
+      "name": "Employee Two",
+      "email": "employee2@company.com",
+      "role": "employee",
+      "department": "Operations",
+      "status": "inactive"
     }
-]
+  ]
+}

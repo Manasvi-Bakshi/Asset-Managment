@@ -1,10 +1,13 @@
-const pool = require("../shared/db/pg.client")
+import fs from "fs"
+import path from "path"
+import { fileURLToPath } from "url"
 
-async function getAllAssets(){
-    const result = await pool.query("SELECT * FROM assets")
-    return result.rows
-}
+const __filename = fileURLToPath(import.meta.url)
+const __dirname = path.dirname(__filename)
 
-module.exports = {
-    getAllAssets
+const assetsFilePath = path.join(__dirname, "assets.json")
+
+export async function getAllAssets() {
+  const data = await fs.promises.readFile(assetsFilePath, "utf-8")
+  return JSON.parse(data)
 }

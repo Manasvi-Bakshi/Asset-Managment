@@ -1,9 +1,5 @@
-const assetRepository = require("./asset.repository")
+import { getAllAssets } from "./asset.repository.js"
 
-async function listAssets() {
-    return await assetRepository.getAllAssets()
-}
-
-module.exports = {
-    listAssets
+export async function listAssets() {
+  return await getAllAssets()
 }

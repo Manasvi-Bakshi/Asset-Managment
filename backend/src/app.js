@@ -1,13 +1,18 @@
-const express = require("express")
+import express from "express"
+import { getAssets } from "./assets/asset.controller.js"
+import { getEmployees } from "./employees/employees.controller.js"
+import { login } from "./auth/auth.controller.js"
+
 const app = express()
-const assetController = require("./assets/asset.controller")
 
 app.use(express.json())
 
-app.get("/health",(req,res)=>{
-    res.send("API is running")
+app.get("/health", (req, res) => {
+  res.send("API is running")
 })
 
-app.get("/assets", assetController.getAssets)
+app.post("/auth/login", login)
+app.get("/assets", getAssets)
+app.get("/employees", getEmployees)
 
-module.exports = app 
+export default app
