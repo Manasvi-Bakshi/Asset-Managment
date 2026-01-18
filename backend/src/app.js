@@ -1,5 +1,5 @@
 import express from "express"
-import { getAssets } from "./assets/asset.controller.js"
+import { getAssets } from "./assets/assets.controller.js"
 import { getEmployees } from "./employees/employees.controller.js"
 import { login } from "./auth/auth.controller.js"
 
