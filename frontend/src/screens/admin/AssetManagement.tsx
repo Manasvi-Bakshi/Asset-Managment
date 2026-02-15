@@ -1,6 +1,8 @@
-import { useState } from 'react';
-import { StatusBadge } from '@/components/common/StatusBadge';
-import { Search, Download, Plus, Edit, Trash2, Filter } from 'lucide-react';
+import { useEffect, useState } from "react";
+import { StatusBadge } from "@/components/common/StatusBadge";
+import { Search, Download, Plus, Edit, Trash2, Filter } from "lucide-react";
+import { fetchAssets } from "@/api/assets";
+import type { Asset as BackendAsset } from "@/types/asset";
 
 interface Asset {
   id: string;
@@ -13,7 +15,7 @@ interface Asset {
   condition: 'excellent' | 'good' | 'fair' | 'poor';
 }
 
-const initialAssets: Asset[] = [
+/*const initialAssets: Asset[] = [
   { id: 'ASSET001', model: 'Dell XPS 15', serialNumber: 'DXP15-9520-A1B2C3', assignedTo: 'John Doe', department: 'Engineering', issueDate: '2024-03-15', warranty: 'Active (2 years)', condition: 'excellent' },
   { id: 'ASSET002', model: 'MacBook Pro 14"', serialNumber: 'MBP14-M2-D4E5F6', assignedTo: 'Sarah Smith', department: 'Design', issueDate: '2024-05-20', warranty: 'Active (3 years)', condition: 'excellent' },
   { id: 'ASSET003', model: 'Lenovo ThinkPad X1', serialNumber: 'TPX1-G9-G7H8I9', assignedTo: 'Mike Johnson', department: 'Sales', issueDate: '2023-11-10', warranty: 'Active (1 year)', condition: 'good' },
@@ -24,11 +26,55 @@ const initialAssets: Asset[] = [
   { id: 'ASSET008', model: 'Microsoft Surface Pro 9', serialNumber: 'MSP9-V4W5X6', assignedTo: 'Sophia Martinez', department: 'Finance', issueDate: '2024-02-28', warranty: 'Active (2 years)', condition: 'good' },
   { id: 'ASSET009', model: 'Dell XPS 13', serialNumber: 'DXP13-9315-Y7Z8A9', assignedTo: 'Oliver Anderson', department: 'Engineering', issueDate: '2024-07-10', warranty: 'Active (2 years)', condition: 'excellent' },
   { id: 'ASSET010', model: 'HP Spectre x360', serialNumber: 'HPSX360-B1C2D3', assignedTo: 'Ava Garcia', department: 'Marketing', issueDate: '2023-12-05', warranty: 'Active (1 year)', condition: 'good' },
-];
+];*/
+
+function mapBackendAsset(asset: BackendAsset): Asset {
+  return {
+    id: asset.asset_code,
+    model: asset.model,
+    serialNumber: asset.serial_number,
+    assignedTo: "—", // Assignment logic later
+    department: "—", // Assignment logic later
+    issueDate: new Date(asset.purchase_date).toLocaleDateString(),
+    warranty: asset.warranty_expiry_date
+      ? `Expires ${new Date(asset.warranty_expiry_date).toLocaleDateString()}`
+      : "Unknown",
+    condition:
+      asset.status === "AVAILABLE"
+        ? "excellent"
+        : asset.status === "DEPLOYED"
+        ? "good"
+        : asset.status === "MAINTENANCE"
+        ? "fair"
+        : "poor",
+  };
+}
 
 export function AssetManagement() {
-  const [assets] = useState<Asset[]>(initialAssets);
+  const [assets, setAssets] = useState<Asset[]>([]);
   const [selectedAssets, setSelectedAssets] = useState<Set<string>>(new Set());
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  /* ---------------------------
+     Fetch Real Assets
+  ---------------------------- */
+
+  useEffect(() => {
+    fetchAssets()
+      .then((backendAssets) => {
+        const mapped = backendAssets.map(mapBackendAsset);
+        setAssets(mapped);
+      })
+      .catch((err) => {
+        console.error(err);
+        setError("Failed to load assets");
+      })
+      .finally(() => setLoading(false));
+  }, []);
+
+  if (loading) return <div className="p-8">Loading assets...</div>;
+  if (error) return <div className="p-8 text-red-600">{error}</div>;
 
   const toggleAsset = (id: string) => {
     const newSelected = new Set(selectedAssets);
@@ -53,8 +99,12 @@ export function AssetManagement() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h2 className="text-2xl font-semibold text-gray-900">ST Asset Management</h2>
-          <p className="text-sm text-gray-500 mt-1">Comprehensive asset tracking and inventory system</p>
+          <h2 className="text-2xl font-semibold text-gray-900">
+            ST Asset Management
+          </h2>
+          <p className="text-sm text-gray-500 mt-1">
+            Comprehensive asset tracking and inventory system
+          </p>
         </div>
         <div className="flex gap-3">
           <button className="flex items-center gap-2 px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 transition">
@@ -77,12 +127,12 @@ export function AssetManagement() {
         <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
         <input
           type="text"
-          placeholder="Search by asset ID, model, serial number, or employee name..."
+          placeholder="Search by asset ID, model, serial number..."
           className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none"
         />
       </div>
 
-      {/* Excel-like Table */}
+      {/* Table */}
       <div className="bg-white rounded-xl border border-gray-200 overflow-hidden shadow-sm">
         <div className="overflow-x-auto">
           <table className="w-full border-collapse">
@@ -93,92 +143,76 @@ export function AssetManagement() {
                     type="checkbox"
                     checked={selectedAssets.size === assets.length}
                     onChange={toggleAll}
-                    className="w-4 h-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+                    className="w-4 h-4"
                   />
                 </th>
-                <th className="px-4 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider border-r border-gray-200 bg-gray-100">
+                <th className="px-4 py-3 text-left text-xs font-semibold bg-gray-100">
                   Asset ID
                 </th>
-                <th className="px-4 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider border-r border-gray-200 bg-gray-100">
+                <th className="px-4 py-3 text-left text-xs font-semibold bg-gray-100">
                   Laptop Model
                 </th>
-                <th className="px-4 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider border-r border-gray-200 bg-gray-100">
+                <th className="px-4 py-3 text-left text-xs font-semibold bg-gray-100">
                   Serial Number
                 </th>
-                <th className="px-4 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider border-r border-gray-200 bg-gray-100">
-                  Assigned To
-                </th>
-                <th className="px-4 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider border-r border-gray-200 bg-gray-100">
-                  Department
-                </th>
-                <th className="px-4 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider border-r border-gray-200 bg-gray-100">
+                <th className="px-4 py-3 text-left text-xs font-semibold bg-gray-100">
                   Issue Date
                 </th>
-                <th className="px-4 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider border-r border-gray-200 bg-gray-100">
-                  Warranty Status
+                <th className="px-4 py-3 text-left text-xs font-semibold bg-gray-100">
+                  Warranty
                 </th>
-                <th className="px-4 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider border-r border-gray-200 bg-gray-100">
+                <th className="px-4 py-3 text-left text-xs font-semibold bg-gray-100">
                   Condition
                 </th>
-                <th className="px-4 py-3 text-center text-xs font-semibold text-gray-700 uppercase tracking-wider bg-gray-100">
+                <th className="px-4 py-3 text-center text-xs font-semibold bg-gray-100">
                   Actions
                 </th>
               </tr>
             </thead>
-            <tbody className="bg-white">
+
+            <tbody>
               {assets.map((asset, index) => (
                 <tr
                   key={asset.id}
-                  className={`border-b border-gray-200 hover:bg-blue-50 transition ${
-                    selectedAssets.has(asset.id) ? 'bg-blue-50' : index % 2 === 0 ? 'bg-white' : 'bg-gray-50'
+                  className={`border-b ${
+                    index % 2 === 0 ? "bg-white" : "bg-gray-50"
                   }`}
                 >
-                  <td className="px-4 py-3 border-r border-gray-200">
+                  <td className="px-4 py-3">
                     <input
                       type="checkbox"
                       checked={selectedAssets.has(asset.id)}
                       onChange={() => toggleAsset(asset.id)}
-                      className="w-4 h-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
                     />
                   </td>
-                  <td className="px-4 py-3 whitespace-nowrap text-sm font-medium text-gray-900 border-r border-gray-200">
+                  <td className="px-4 py-3 text-sm font-medium">
                     {asset.id}
                   </td>
-                  <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-700 border-r border-gray-200">
-                    {asset.model}
-                  </td>
-                  <td className="px-4 py-3 whitespace-nowrap text-sm font-mono text-gray-600 border-r border-gray-200">
+                  <td className="px-4 py-3 text-sm">{asset.model}</td>
+                  <td className="px-4 py-3 text-sm font-mono">
                     {asset.serialNumber}
                   </td>
-                  <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-700 border-r border-gray-200">
-                    {asset.assignedTo}
-                  </td>
-                  <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-600 border-r border-gray-200">
-                    {asset.department}
-                  </td>
-                  <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-600 border-r border-gray-200">
-                    {asset.issueDate}
-                  </td>
-                  <td className="px-4 py-3 whitespace-nowrap text-sm border-r border-gray-200">
-                    <span className={asset.warranty.includes('Active') ? 'text-green-600' : 'text-red-600'}>
-                      {asset.warranty}
-                    </span>
-                  </td>
-                  <td className="px-4 py-3 whitespace-nowrap border-r border-gray-200">
+                  <td className="px-4 py-3 text-sm">{asset.issueDate}</td>
+                  <td className="px-4 py-3 text-sm">{asset.warranty}</td>
+                  <td className="px-4 py-3">
                     <StatusBadge
                       status={
-                        asset.condition === 'excellent' || asset.condition === 'good' ? 'success' :
-                        asset.condition === 'fair' ? 'warning' : 'danger'
+                        asset.condition === "excellent" ||
+                        asset.condition === "good"
+                          ? "success"
+                          : asset.condition === "fair"
+                          ? "warning"
+                          : "danger"
                       }
                       label={asset.condition.toUpperCase()}
                     />
                   </td>
-                  <td className="px-4 py-3 whitespace-nowrap text-center">
-                    <div className="flex items-center justify-center gap-2">
-                      <button className="p-1 text-blue-600 hover:bg-blue-100 rounded transition" title="Edit">
+                  <td className="px-4 py-3 text-center">
+                    <div className="flex justify-center gap-2">
+                      <button className="p-1 text-blue-600" aria-label="Edit asset">
                         <Edit className="w-4 h-4" />
                       </button>
-                      <button className="p-1 text-red-600 hover:bg-red-100 rounded transition" title="Delete">
+                      <button className="p-1 text-red-600" aria-label="Delete asset">
                         <Trash2 className="w-4 h-4" />
                       </button>
                     </div>
@@ -191,22 +225,8 @@ export function AssetManagement() {
       </div>
 
       {/* Summary */}
-      <div className="flex items-center justify-between text-sm text-gray-600">
-        <div>
-          Showing {assets.length} assets
-          {selectedAssets.size > 0 && ` • ${selectedAssets.size} selected`}
-        </div>
-        <div className="flex gap-2">
-          <button className="px-3 py-1 border border-gray-300 rounded hover:bg-gray-50 transition">
-            Previous
-          </button>
-          <button className="px-3 py-1 bg-blue-600 text-white rounded">1</button>
-          <button className="px-3 py-1 border border-gray-300 rounded hover:bg-gray-50 transition">2</button>
-          <button className="px-3 py-1 border border-gray-300 rounded hover:bg-gray-50 transition">3</button>
-          <button className="px-3 py-1 border border-gray-300 rounded hover:bg-gray-50 transition">
-            Next
-          </button>
-        </div>
+      <div className="text-sm text-gray-600">
+        Showing {assets.length} assets
       </div>
     </div>
   );
