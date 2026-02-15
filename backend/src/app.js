@@ -5,6 +5,14 @@ import { getEmployees } from "./employees/employees.controller.js"
 import { login } from "./auth/auth.controller.js"
 import { listEmployees } from "./employees/employees.service.js";
 import { listAssets } from "./assets/assets.service.js";
+import { postPresenceEvent } from "./presence/presence.controller.js";
+
+import {
+  getEmployeeByEuidController,
+  getEmployeeAssets,
+  getEmployeeAttendance
+} from "./employees/employees.controller.js"
+
 
 const app = express()
 
@@ -22,8 +30,17 @@ app.get("/health", (req, res) => {
 })
 
 app.post("/auth/login", login)
+
 app.get("/assets", getAssets)
+
 app.get("/employees", getEmployees)
+app.get("/employees/:euid", getEmployeeByEuidController)
+app.get("/employees/:euid/assets", getEmployeeAssets)
+app.get("/employees/:euid/attendance", getEmployeeAttendance)
+
+app.post("/presence", postPresenceEvent);
+
+
 app.get("/reports/summary", async (req, res) => {
   try {
     const employees = await listEmployees();

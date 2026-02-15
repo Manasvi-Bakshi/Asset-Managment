@@ -1,6 +1,56 @@
-import { Laptop, Calendar, Shield, Wrench, FileText, CheckCircle } from 'lucide-react';
+import { useEffect, useState } from "react";
+import { Laptop, Calendar, Shield, Wrench, FileText, CheckCircle } from "lucide-react";
+import { apiGet } from "@/api/http";
 
-export function AssignedLaptop() {
+interface AssignedLaptopProps {
+  employeeEuid: string;
+}
+
+interface Asset {
+  id: string;
+  asset_code: string;
+  company: string;
+  model: string;
+  serial_number: string;
+  purchase_date: string;
+  warranty_expiry_date: string;
+  status: string;
+}
+
+export function AssignedLaptop({ employeeEuid }: AssignedLaptopProps) {
+  const [asset, setAsset] = useState<Asset | null>(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    async function fetchAssignedLaptop() {
+      try {
+        const response = await apiGet<{ success: boolean; data: Asset[] }>(
+          `/employees/${employeeEuid}/assets`
+        );
+
+        if (response.success && response.data.length > 0) {
+          setAsset(response.data[0]); // assuming single active assignment
+        }
+      } catch (error) {
+        console.error("Failed to fetch assigned laptop", error);
+      } finally {
+        setLoading(false);
+      }
+    }
+
+    if (employeeEuid) {
+      fetchAssignedLaptop();
+    }
+  }, [employeeEuid]);
+
+  if (loading) {
+    return <div className="p-8">Loading assigned laptop...</div>;
+  }
+
+  if (!asset) {
+    return <div className="p-8">No laptop assigned.</div>;
+  }
+
   return (
     <div className="space-y-6">
       {/* Main Laptop Card */}
@@ -11,166 +61,98 @@ export function AssignedLaptop() {
               <Laptop className="w-8 h-8 text-white" />
             </div>
             <div>
-              <h2 className="text-2xl font-bold text-purple-900">Dell XPS 15 9520</h2>
+              <h2 className="text-2xl font-bold text-purple-900">
+                {asset.company} {asset.model}
+              </h2>
               <p className="text-purple-700">Your Assigned Laptop</p>
             </div>
           </div>
           <div className="flex items-center gap-2 bg-green-600 text-white px-4 py-2 rounded-lg">
             <CheckCircle className="w-5 h-5" />
-            <span className="font-medium">Active</span>
+            <span className="font-medium">{asset.status}</span>
           </div>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div className="bg-white rounded-lg p-4 shadow-sm">
-            <p className="text-sm text-gray-600 mb-1">Asset ID</p>
-            <p className="text-xl font-bold text-gray-900">ASSET001</p>
+            <p className="text-sm text-gray-600 mb-1">Asset Code</p>
+            <p className="text-xl font-bold text-gray-900">{asset.asset_code}</p>
           </div>
           <div className="bg-white rounded-lg p-4 shadow-sm">
             <p className="text-sm text-gray-600 mb-1">Serial Number</p>
-            <p className="text-lg font-mono font-semibold text-gray-900">DXP15-9520-A1B2C3</p>
+            <p className="text-lg font-mono font-semibold text-gray-900">
+              {asset.serial_number}
+            </p>
           </div>
         </div>
       </div>
 
-      {/* Details Grid */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {/* Assignment Details */}
-        <div className="bg-white rounded-xl border border-gray-200 p-6">
-          <div className="flex items-center gap-3 mb-4">
-            <Calendar className="w-6 h-6 text-blue-600" />
-            <h3 className="text-lg font-semibold text-gray-900">Assignment Details</h3>
-          </div>
-          <div className="space-y-3">
-            <div className="flex justify-between items-center pb-3 border-b border-gray-100">
-              <span className="text-gray-600">Assigned Date</span>
-              <span className="font-semibold text-gray-900">March 15, 2024</span>
-            </div>
-            <div className="flex justify-between items-center pb-3 border-b border-gray-100">
-              <span className="text-gray-600">Department</span>
-              <span className="font-semibold text-gray-900">Engineering</span>
-            </div>
-            <div className="flex justify-between items-center pb-3 border-b border-gray-100">
-              <span className="text-gray-600">Assigned By</span>
-              <span className="font-semibold text-gray-900">IT Department</span>
-            </div>
-            <div className="flex justify-between items-center">
-              <span className="text-gray-600">Days in Use</span>
-              <span className="font-semibold text-gray-900">307 days</span>
-            </div>
-          </div>
+      {/* Assignment Details */}
+      <div className="bg-white rounded-xl border border-gray-200 p-6">
+        <div className="flex items-center gap-3 mb-4">
+          <Calendar className="w-6 h-6 text-blue-600" />
+          <h3 className="text-lg font-semibold text-gray-900">
+            Assignment Details
+          </h3>
         </div>
-
-        {/* Warranty Information */}
-        <div className="bg-white rounded-xl border border-gray-200 p-6">
-          <div className="flex items-center gap-3 mb-4">
-            <Shield className="w-6 h-6 text-green-600" />
-            <h3 className="text-lg font-semibold text-gray-900">Warranty Information</h3>
+        <div className="space-y-3">
+          <div className="flex justify-between items-center pb-3 border-b border-gray-100">
+            <span className="text-gray-600">Purchase Date</span>
+            <span className="font-semibold text-gray-900">
+              {new Date(asset.purchase_date).toLocaleDateString()}
+            </span>
           </div>
-          <div className="space-y-3">
-            <div className="flex justify-between items-center pb-3 border-b border-gray-100">
-              <span className="text-gray-600">Warranty Status</span>
-              <span className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-green-100 text-green-700">
-                Active
-              </span>
-            </div>
-            <div className="flex justify-between items-center pb-3 border-b border-gray-100">
-              <span className="text-gray-600">Coverage Period</span>
-              <span className="font-semibold text-gray-900">3 Years</span>
-            </div>
-            <div className="flex justify-between items-center pb-3 border-b border-gray-100">
-              <span className="text-gray-600">Expires On</span>
-              <span className="font-semibold text-gray-900">March 15, 2027</span>
-            </div>
-            <div className="flex justify-between items-center">
-              <span className="text-gray-600">Remaining</span>
-              <span className="font-semibold text-green-600">1 year, 2 months</span>
-            </div>
+          <div className="flex justify-between items-center">
+            <span className="text-gray-600">Status</span>
+            <span className="font-semibold text-gray-900">
+              {asset.status}
+            </span>
           </div>
         </div>
       </div>
 
-      {/* Specifications */}
+      {/* Warranty Information */}
+      <div className="bg-white rounded-xl border border-gray-200 p-6">
+        <div className="flex items-center gap-3 mb-4">
+          <Shield className="w-6 h-6 text-green-600" />
+          <h3 className="text-lg font-semibold text-gray-900">
+            Warranty Information
+          </h3>
+        </div>
+        <div className="space-y-3">
+          <div className="flex justify-between items-center">
+            <span className="text-gray-600">Expires On</span>
+            <span className="font-semibold text-gray-900">
+              {new Date(asset.warranty_expiry_date).toLocaleDateString()}
+            </span>
+          </div>
+        </div>
+      </div>
+
+      {/* Technical Section Placeholder */}
       <div className="bg-white rounded-xl border border-gray-200 p-6">
         <div className="flex items-center gap-3 mb-4">
           <FileText className="w-6 h-6 text-purple-600" />
-          <h3 className="text-lg font-semibold text-gray-900">Technical Specifications</h3>
+          <h3 className="text-lg font-semibold text-gray-900">
+            Technical Specifications
+          </h3>
         </div>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-          <div className="p-4 bg-gray-50 rounded-lg">
-            <p className="text-sm text-gray-600 mb-1">Processor</p>
-            <p className="font-semibold text-gray-900">Intel Core i7-12700H</p>
-          </div>
-          <div className="p-4 bg-gray-50 rounded-lg">
-            <p className="text-sm text-gray-600 mb-1">RAM</p>
-            <p className="font-semibold text-gray-900">16 GB DDR5</p>
-          </div>
-          <div className="p-4 bg-gray-50 rounded-lg">
-            <p className="text-sm text-gray-600 mb-1">Storage</p>
-            <p className="font-semibold text-gray-900">512 GB NVMe SSD</p>
-          </div>
-          <div className="p-4 bg-gray-50 rounded-lg">
-            <p className="text-sm text-gray-600 mb-1">Display</p>
-            <p className="font-semibold text-gray-900">15.6" FHD (1920x1080)</p>
-          </div>
-          <div className="p-4 bg-gray-50 rounded-lg">
-            <p className="text-sm text-gray-600 mb-1">Graphics</p>
-            <p className="font-semibold text-gray-900">Intel Iris Xe</p>
-          </div>
-          <div className="p-4 bg-gray-50 rounded-lg">
-            <p className="text-sm text-gray-600 mb-1">Operating System</p>
-            <p className="font-semibold text-gray-900">Windows 11 Pro</p>
-          </div>
-        </div>
+        <p className="text-gray-600">
+          Technical specifications will be integrated later.
+        </p>
       </div>
 
-      {/* Condition Status */}
+      {/* Condition Placeholder */}
       <div className="bg-white rounded-xl border border-gray-200 p-6">
         <div className="flex items-center gap-3 mb-4">
           <Wrench className="w-6 h-6 text-orange-600" />
-          <h3 className="text-lg font-semibold text-gray-900">Condition & Maintenance</h3>
+          <h3 className="text-lg font-semibold text-gray-900">
+            Condition & Maintenance
+          </h3>
         </div>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <div>
-            <p className="text-sm text-gray-600 mb-2">Physical Condition</p>
-            <div className="flex items-center gap-3">
-              <span className="inline-flex items-center px-4 py-2 rounded-lg text-sm font-medium bg-green-100 text-green-700 border border-green-200">
-                EXCELLENT
-              </span>
-              <span className="text-sm text-gray-600">No visible damage or wear</span>
-            </div>
-          </div>
-          <div>
-            <p className="text-sm text-gray-600 mb-2">Last Maintenance</p>
-            <div className="flex items-center gap-3">
-              <span className="font-semibold text-gray-900">December 20, 2025</span>
-              <span className="text-sm text-gray-600">Software update & cleaning</span>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {/* Important Notes */}
-      <div className="bg-blue-50 border border-blue-200 rounded-xl p-6">
-        <h3 className="font-semibold text-blue-900 mb-3">Important Information</h3>
-        <ul className="space-y-2 text-sm text-blue-800">
-          <li className="flex items-start gap-2">
-            <span className="text-blue-600 mt-1">•</span>
-            <span>This laptop is ST company property and should be used for work purposes only.</span>
-          </li>
-          <li className="flex items-start gap-2">
-            <span className="text-blue-600 mt-1">•</span>
-            <span>Report any damage or technical issues to IT support immediately.</span>
-          </li>
-          <li className="flex items-start gap-2">
-            <span className="text-blue-600 mt-1">•</span>
-            <span>Regular maintenance and software updates are performed automatically.</span>
-          </li>
-          <li className="flex items-start gap-2">
-            <span className="text-blue-600 mt-1">•</span>
-            <span>Contact IT support at support@st-assets.com for any assistance.</span>
-          </li>
-        </ul>
+        <p className="text-gray-600">
+          Device health integration will be implemented next phase.
+        </p>
       </div>
     </div>
   );

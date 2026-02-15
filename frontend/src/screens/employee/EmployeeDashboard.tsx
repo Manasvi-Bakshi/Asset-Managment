@@ -7,24 +7,25 @@ import stLogo from 'figma:asset/8a2a604d8afe75e33045de09e7f0260bf54a57ec.png';
 
 interface EmployeeDashboardProps {
   userName: string;
+  employeeEuid: string;
   onLogout: () => void;
 }
 
 export type EmployeePage = 'attendance' | 'device-health' | 'laptop';
 
-export function EmployeeDashboard({ userName, onLogout }: EmployeeDashboardProps) {
+export function EmployeeDashboard({ userName, employeeEuid, onLogout }: EmployeeDashboardProps) {
   const [activePage, setActivePage] = useState<EmployeePage>('attendance');
 
   const renderContent = () => {
     switch (activePage) {
       case 'attendance':
-        return <EmployeeAttendance userName={userName} />;
+        return <EmployeeAttendance employeeEuid={employeeEuid} />;
       case 'device-health':
         return <EmployeeDeviceHealth />;
       case 'laptop':
-        return <AssignedLaptop />;
+        return <AssignedLaptop employeeEuid={employeeEuid} />;
       default:
-        return <EmployeeAttendance userName={userName} />;
+        return <EmployeeAttendance employeeEuid={employeeEuid} />;
     }
   };
 
