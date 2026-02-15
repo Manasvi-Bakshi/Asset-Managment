@@ -1,86 +1,90 @@
 import streamlit as st
 import pandas as pd
+import joblib
+import numpy as np
 
-st.set_page_config(page_title="Motherboard Health Monitor")
+# ---------------- LOAD DATASET ----------------
+df = pd.read_csv("Laptop_Motherboard_Health_Monitoring_Dataset.csv")
 
-st.title("💻 Laptop Motherboard Health Monitoring")
-st.write("📂 Upload the dataset")
+# ---------------- LOAD MODEL ----------------
+model = joblib.load("device_health_model.pkl")
+scaler = joblib.load("scaler.pkl")
+le = joblib.load("label_encoder.pkl")
 
-# =========================
-# DATASET UPLOAD
-# =========================
-uploaded_file = st.file_uploader(
-    "Upload Laptop_Motherboard_Health_Monitoring_Dataset.csv",
-    type=["csv"]
-)
+st.set_page_config(page_title="ST Employee Portal", layout="wide")
 
-if uploaded_file is None:
-    st.warning("⚠ Please upload the dataset to continue")
-    st.stop()
+st.markdown("<h2 style='color:#1f4e79;'>ST Employee Portal</h2>", unsafe_allow_html=True)
+st.markdown("### Device Health Dashboard")
 
-# Read dataset
-df = pd.read_csv(uploaded_file)
+st.markdown("---")
 
-st.subheader("📊 Uploaded Dataset Preview")
-st.dataframe(df)
+# ---------------- SELECT DEVICE ----------------
+device_index = st.selectbox("Select Device Record", df.index)
 
-# =========================
-# SELECT RECORD
-# =========================
-st.subheader("🔎 Select System Record")
+device = df.loc[device_index]
 
-row_index = st.slider(
-    "Select row number",
-    min_value=0,
-    max_value=len(df) - 1,
-    value=0
-)
+# Extract attributes from dataset
+cpu_usage = device["CPUUsage"]
+ram_usage = device["RAMUsage"]
+temperature = device["Temperature"]
+voltage = device["Voltage"]
+disk_usage = device["DiskUsage"]
+fan_speed = device["FanSpeed"]
 
-row = df.iloc[row_index]
+# ---------------- ML PREDICTION ----------------
+input_data = np.array([[cpu_usage, ram_usage,
+                        temperature, voltage,
+                        disk_usage, fan_speed]])
 
-# =========================
-# DISPLAY VALUES
-# =========================
-st.subheader("🧠 System Parameters")
+scaled = scaler.transform(input_data)
+prediction = model.predict(scaled)
+predicted_status = le.inverse_transform(prediction)[0]
 
-cpu = row["CPUUsage"]
-ram = row["RAMUsage"]
-temp = row["Temperature"]
-voltage = row["Voltage"]
-disk = row["DiskUsage"]
-fan = row["FanSpeed"]
+# ---------------- DERIVED METRICS ----------------
+cpu_performance = 100 - cpu_usage
+ram_health = 100 - ram_usage
+storage_available = 100 - disk_usage
 
-st.write(f"CPU Usage: {cpu}%")
-st.write(f"RAM Usage: {ram}%")
-st.write(f"Temperature: {temp} °C")
-st.write(f"Voltage: {voltage} V")
-st.write(f"Disk Usage: {disk}%")
-st.write(f"Fan Speed: {fan} RPM")
+if predicted_status == "No Problem":
+    overall_health = 90
+    health_label = "Healthy"
+    color = "green"
+elif "Failure" in predicted_status or "Overheat" in predicted_status:
+    overall_health = 55
+    health_label = "Warning"
+    color = "orange"
+else:
+    overall_health = 35
+    health_label = "Critical"
+    color = "red"
 
-# =========================
-# RULE-BASED HEALTH CHECK
-# =========================
-def detect_problem(cpu, ram, temp, voltage, disk, fan):
-    if temp > 90:
-        return "Overheating"
-    elif voltage < 10.5 or voltage > 13.5:
-        return "Power Issue"
-    elif disk > 90:
-        return "Disk Failure"
-    elif ram > 85 and cpu < 50:
-        return "Memory Leak"
-    else:
-        return "No Problem"
+# ---------------- DASHBOARD CARDS ----------------
+st.markdown("## Device Summary")
 
-# =========================
-# PREDICTION
-# =========================
-if st.button("Predict Health Status"):
-    predicted = detect_problem(cpu, ram, temp, voltage, disk, fan)
-    actual = row["ProblemDetected"]
+c1, c2, c3, c4 = st.columns(4)
 
-    st.subheader("🔍 Result")
-    st.success(f"Predicted Status: {predicted}")
-    st.info(f"Actual Status (from dataset): {actual}")
- 
+c1.metric("RAM Health", f"{ram_health}%")
+c2.metric("CPU Performance", f"{cpu_performance}%")
+c3.metric("Storage Available", f"{storage_available}%")
+c4.metric("Overall Health", f"{overall_health}%")
 
+st.markdown(f"<h3 style='color:{color};'>Status: {health_label}</h3>", unsafe_allow_html=True)
+
+st.markdown("---")
+
+# ---------------- DETAIL SECTION ----------------
+st.markdown("### System Details")
+
+d1, d2 = st.columns(2)
+
+with d1:
+    st.write("CPU Usage:", cpu_usage, "%")
+    st.write("Temperature:", temperature, "°C")
+    st.write("Voltage:", voltage, "V")
+
+with d2:
+    st.write("RAM Usage:", ram_usage, "%")
+    st.write("Disk Usage:", disk_usage, "%")
+    st.write("Fan Speed:", fan_speed, "RPM")
+    st.write("Actual Problem Detected:", device["ProblemDetected"])
+    st.write("Predicted Problem:", predicted_status)
