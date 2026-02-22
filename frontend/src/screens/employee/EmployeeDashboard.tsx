@@ -1,8 +1,9 @@
-import { useState } from 'react';
+import { useState, useEffect, useRef } from "react";
 import { EmployeeAttendance } from './EmployeeAttendance';
 import { EmployeeDeviceHealth } from './EmployeeDeviceHealth';
 import { AssignedLaptop } from './AssignedLaptop';
 import { LogOut, Clock, Laptop, Activity } from 'lucide-react';
+import { postPresence } from "@/api/presence";
 import stLogo from 'figma:asset/8a2a604d8afe75e33045de09e7f0260bf54a57ec.png';
 
 interface EmployeeDashboardProps {
@@ -15,6 +16,8 @@ export type EmployeePage = 'attendance' | 'device-health' | 'laptop';
 
 export function EmployeeDashboard({ userName, employeeEuid, onLogout }: EmployeeDashboardProps) {
   const [activePage, setActivePage] = useState<EmployeePage>('attendance');
+  const hasMarkedPresence = useRef(false);
+
 
   const renderContent = () => {
     switch (activePage) {
@@ -28,6 +31,74 @@ export function EmployeeDashboard({ userName, employeeEuid, onLogout }: Employee
         return <EmployeeAttendance employeeEuid={employeeEuid} />;
     }
   };
+
+  useEffect(() => {
+  if (hasMarkedPresence.current) return;
+
+  async function markPresenceOnce() {
+    try {
+      // 🔹 Step 1: fetch assigned asset for this employee
+      const res = await fetch(
+        `http://localhost:5000/employees/${employeeEuid}/assets`
+      );
+      const json = await res.json();
+
+      const assignedAsset = json?.data?.[0];
+
+      if (!assignedAsset) {
+        console.warn("No assigned asset found — skipping presence");
+        return;
+      }
+
+      const assetId = assignedAsset.id;
+      const locationId = assignedAsset.location_id;
+
+      if (!assetId || !locationId) {
+        console.warn("Missing asset/location for presence");
+        return;
+      }
+
+      // 🔹 Step 2: ensure geolocation available
+      if (!navigator.geolocation) {
+        console.warn("Geolocation not supported");
+        return;
+      }
+
+      // 🔹 Step 3: get live GPS
+      navigator.geolocation.getCurrentPosition(
+        async (position) => {
+          try {
+            await postPresence({
+              asset_id: assetId,
+              location_id: locationId,
+              event_type: "ENTER",
+              source: "WEB",
+              latitude: position.coords.latitude,
+              longitude: position.coords.longitude,
+            });
+
+            hasMarkedPresence.current = true;
+            console.log("✅ Auto presence marked");
+          } catch (err) {
+            console.error("Presence API failed", err);
+          }
+        },
+        (error) => {
+          console.error("Location permission denied", error);
+        },
+        {
+          enableHighAccuracy: true,
+          timeout: 10000,
+        }
+      );
+    } catch (err) {
+      console.error("Failed to fetch assigned asset", err);
+    }
+  }
+
+  markPresenceOnce();
+}, [employeeEuid]);
+
 
   return (
     <div className="min-h-screen bg-gray-50">

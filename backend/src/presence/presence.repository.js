@@ -70,9 +70,11 @@ export async function createAttendance(employee_id, date, entry_time) {
       employee_id,
       attendance_date,
       first_entry_time,
+      last_entry_time,
+      total_duration_minutes,
       status
     )
-    VALUES ($1, $2, $3, 'PRESENT')
+    VALUES ($1, $2, $3, 0, 'PRESENT')
     RETURNING *
     `,
     [employee_id, date, entry_time]
@@ -85,14 +87,45 @@ export async function updateAttendanceExit(record_id, exit_time) {
   const { rows } = await pool.query(
     `
     UPDATE attendance_daily
-    SET last_exit_time = $1,
-        total_duration_minutes =
-          EXTRACT(EPOCH FROM ($1 - first_entry_time)) / 60
+    SET 
+      last_exit_time = $1,
+      total_duration_minutes =
+        COALESCE(total_duration_minutes, 0) +  
+        EXTRACT(EPOCH FROM ($1 - first_entry_time)) / 60
+        last_entry_time = NULL
     WHERE id = $2
+      AND last_entry_time IS NOT NULL
     RETURNING *
     `,
     [exit_time, record_id]
   );
 
+  return rows[0];
+}
+
+export async function getEventDateIST(timestamp) {
+  const { rows } = await pool.query(
+    `
+    SELECT ($1 AT TIME ZONE 'Asia/Kolkata')::date AS attendance_date
+    `,
+    [timestamp]
+  );
+
+  return rows[0].attendance_date;
+}
+
+export async function updateAttendanceEntry(record_id, entry_time) {
+  const { rows } = await pool.query(
+    `
+    UPDATE attendance_daily
+    SET
+      last_entry_time = $1,
+      status = 'PRESENT'
+    WHERE id = $2
+    RETURNING *
+    `,
+    [entry_time, record_id]
+  );
+  
   return rows[0];
 }
